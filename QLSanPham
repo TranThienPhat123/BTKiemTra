@@ -1,0 +1,101 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using BaiThi02.Models;
+
+namespace BaiThi02
+{
+    public partial class frmSanpham : Form
+    {
+        ModelDbSanPham DbSanPham = new ModelDbSanPham();
+
+        public frmSanpham()
+        {
+            InitializeComponent();
+        }
+
+        private void frmSanpham_Load(object sender, EventArgs e)
+        {
+            FillDGVSanPham();
+            FillDGVLoai();
+            txtMaSP.ReadOnly = true;
+            txtTenSP.ReadOnly = true;
+            dtNgayNhap.Enabled = false;
+            dtNgayNhap.ShowUpDown = true;
+
+        }
+
+        private void FillDGVLoai()
+        {
+            List<LoaiSP> ListLoaiSP = DbSanPham.LoaiSPs.ToList();
+
+            cbbLoaiSP.DataSource = ListLoaiSP;
+            cbbLoaiSP.DisplayMember = "TenLoai";
+            cbbLoaiSP.ValueMember = "MaLoai";   
+            cbbLoaiSP.SelectedIndex = -1;
+        }
+
+        private void FillDGVSanPham()
+        {
+            List<SanPham> Listproduct = DbSanPham.SanPhams.ToList();
+
+            foreach (SanPham sanPham in Listproduct)
+            {
+                int newRow = dgvSanPham.Rows.Add();
+
+                dgvSanPham.Rows[newRow].Cells[0].Value = sanPham.MaSP;
+                dgvSanPham.Rows[newRow].Cells[1].Value = sanPham.TenSP;
+                dgvSanPham.Rows[newRow].Cells[2].Value = sanPham.NgayNhap;
+                dgvSanPham.Rows[newRow].Cells[3].Value = sanPham.LoaiSP?.TenLoai;
+            }
+        }
+
+        private void dgvSanPham_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                DataGridViewRow selectedRow = dgvSanPham.Rows[e.RowIndex];
+
+                string MaSP = selectedRow.Cells[0].Value.ToString();
+                string TenSP = selectedRow.Cells[1].Value.ToString();
+                string NgayNhap = selectedRow.Cells[2].Value.ToString();
+                string LoaiSP = selectedRow.Cells[3].Value.ToString();
+
+                txtMaSP.Text = MaSP;
+                txtTenSP.Text = TenSP;
+                dtNgayNhap.Value = DateTime.Parse(NgayNhap);
+
+                var LoaiSP = DbSanPham.SanPhams.FirstOrDefault(f => f.TenSP == LoaiSP)?.LoaiSP;
+                if (LoaiSP != null)
+                {
+                    cbbLoaiSP.SelectedValue = LoaiSP.MaLoai; 
+                }
+                else
+                {
+                    cbbLoaiSP.SelectedIndex = -1; 
+                }
+            }
+        }
+
+        private void btnThoat_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show(
+                "Bạn có chắc chắn muốn thoát không?",
+                "Xác nhận thoát",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (result == DialogResult.Yes)
+            {
+                this.Close(); 
+            }
+        }
+    }
+}
